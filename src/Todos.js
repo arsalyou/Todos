@@ -44,6 +44,7 @@ function Todos() {
   const classes = useStyles();
   const [todos, setTodos] = useState([]);
   const [newTodoText, setNewTodoText] = useState("");
+  const today = new Date().setHours(0,0,0,0);
 
   useEffect(() => {
     fetch("http://localhost:3001/")
@@ -52,6 +53,10 @@ function Todos() {
   }, [setTodos]);
 
   function addTodo(text) {
+    if (text === ""){
+      alert("Add Task Name");
+      return;
+    }
     fetch("http://localhost:3001/", {
       headers: {
         Accept: "application/json",
@@ -66,6 +71,10 @@ function Todos() {
   }
 
   function selectDueDate(id, dueDate) {
+    if(dueDate < today){
+      alert('Due date can not be past date');
+      return;
+    }
     console.log(dueDate);
     fetch(`http://localhost:3001/dueDate/${id}`, {
       headers: {
@@ -164,7 +173,20 @@ function Todos() {
   }
 
   function filterTask(){
-    
+    const fiteredTasks = todos.filter(todoTask =>{
+      todoTask.dueDate === today
+    })
+
+
+    fetch(`http://localhost:3001/duetaskstoday`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      method: "GET",
+    }).then((response) => response.json())
+    .then((todos) => setTodos(todos));
+
   }
 
   return (
@@ -195,7 +217,7 @@ function Todos() {
           </Button>
           <Button
             className={classes.addTodoButton}
-            onClick={() => addTodo(newTodoText)}
+            onClick={filterTask}
           >
             Filter due tasks
           </Button>
@@ -231,9 +253,10 @@ function Todos() {
                             </Typography>
                             <LocalizationProvider dateAdapter={AdapterDateFns}>
                               <DesktopDatePicker
-                                label="Date desktop"
+                                label="Select Due date"
                                 inputFormat="MM/dd/yyyy"
-                                value={dueDate}
+                                value={dueDate ? dueDate: null}
+                                minDate={!dueDate ? today : null}
                                 onChange={(selectedDate) => {
                                   selectDueDate(id, selectedDate);
                                 }}
