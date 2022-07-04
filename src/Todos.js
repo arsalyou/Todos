@@ -44,16 +44,22 @@ function Todos() {
   const classes = useStyles();
   const [todos, setTodos] = useState([]);
   const [newTodoText, setNewTodoText] = useState("");
-  const today = new Date().setHours(0,0,0,0);
+  const [totalTasks, setTotalTasks] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const today = new Date().setHours(0, 0, 0, 0);
 
   useEffect(() => {
     fetch("http://localhost:3001/")
       .then((response) => response.json())
-      .then((todos) => setTodos(todos));
+      .then((todos) => {
+        console.log(todos);
+        setTodos(todos?.response)
+      });
+    setTotalTasks(todos?.totalTasks);
   }, [setTodos]);
 
   function addTodo(text) {
-    if (text === ""){
+    if (text === "") {
       alert("Add Task Name");
       return;
     }
@@ -66,12 +72,15 @@ function Todos() {
       body: JSON.stringify({ text }),
     })
       .then((response) => response.json())
-      .then((todo) => setTodos([...todos, todo]));
+      .then((todo) => {
+        setTotalTasks(totalTasks + 1);
+        setTodos([...todos, todo])
+      });
     setNewTodoText("");
   }
 
   function selectDueDate(id, dueDate) {
-    if(dueDate < today){
+    if (dueDate < today) {
       alert('Due date can not be past date');
       return;
     }
@@ -120,7 +129,10 @@ function Todos() {
   function deleteTodo(id) {
     fetch(`http://localhost:3001/${id}`, {
       method: "DELETE",
-    }).then(() => setTodos(todos.filter((todo) => todo.id !== id)));
+    }).then(() => {
+      setTotalTasks(totalTasks - 1);
+      setTodos(todos.filter((todo) => todo.id !== id))
+    });
   }
 
   function handleOnDragEnd(result) {
@@ -134,26 +146,39 @@ function Todos() {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     let newId = null;
-    switch (result.destination.index){
-      case 0:{
-        newId = todos[newIndex].id - 1000;
-        reorderedItem.id = newId;
-        break;
-      }
-      case todos.length - 1:{
-        newId = todos[newIndex].id + 1000;
-        reorderedItem.id = newId;
-        break;
-      }
-      default:{
-        const prevId = todos[newIndex - 1].id;
-        const nextId = todos[newIndex + 1].id;
-        newId = Math.round((parseInt(prevId) + parseInt(nextId))/2);
-        console.log(newId);
-        reorderedItem.id = newId;
-        break; 
-      }
+    let body = null; 
+    if (totalTasks > todos?.length) {
+      body = JSON.stringify({
+        updatedId: null,
+        prevId: todos[newIndex].id
+      })
 
+    } else {
+      switch (result.destination.index) {
+        case 0: {
+          newId = todos[newIndex].id - 1000;
+          reorderedItem.id = newId;
+          break;
+        }
+        case todos.length - 1: {
+          newId = todos[newIndex].id + 1000;
+          reorderedItem.id = newId;
+          break;
+        }
+        default: {
+          const prevId = todos[newIndex - 1].id;
+          const nextId = todos[newIndex + 1].id;
+          newId = Math.round((parseInt(prevId) + parseInt(nextId)) / 2);
+          console.log(newId);
+          reorderedItem.id = newId;
+          break;
+        }
+
+      }
+      body = JSON.stringify({
+        updatedId: newId.toString(),
+        prevId: null
+      })
     }
     fetch(`http://localhost:3001/updateId/${sourceId}`, {
       headers: {
@@ -161,22 +186,22 @@ function Todos() {
         "Content-Type": "application/json",
       },
       method: "PUT",
-      body: JSON.stringify({
-        updatedId: newId.toString(),
-      }),
+      body: body,
     }).then(() => {
       setTodos(items);
-    }).catch(()=>{
+    }).catch(() => {
       //setTodos(prevTodos);
     });
- setTodos(items);
+    setTodos(items);
   }
 
-  function filterTask(){
-    const fiteredTasks = todos.filter(todoTask =>{
+  function filterTask() {
+    if (totalTasks === todos?.length) {
+    const fiteredTasks = todos.filter(todoTask => {
       todoTask.dueDate === today
     })
-
+    setTodos(fiteredTasks);
+  }else{
 
     fetch(`http://localhost:3001/duetaskstoday`, {
       headers: {
@@ -185,9 +210,35 @@ function Todos() {
       },
       method: "GET",
     }).then((response) => response.json())
-    .then((todos) => setTodos(todos));
-
+      .then((todos) => setTodos(todos));
   }
+  }
+
+
+  function loadMoreTasks() {
+    if (totalTasks > todos?.length) {
+   
+
+    fetch(`http://localhost:3001/loadtasks`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        body: JSON.stringify({
+          id: todos[todos.length-1].id,
+        }),
+      },
+      method: "GET",
+    }).then((response) => response.json())
+      .then((todos) => {
+        setTodos(todos)
+
+      });
+  }
+  }
+
+
+
+
 
   return (
     <Container maxWidth="md">
@@ -233,7 +284,7 @@ function Todos() {
                     <Draggable key={id} draggableId={id.toString()} index={index}>
                       {(provided) => (
                         <Box
-                        ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}
+                          ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}
                           key={id}
                           display="flex"
                           flexDirection="row"
@@ -255,7 +306,7 @@ function Todos() {
                               <DesktopDatePicker
                                 label="Select Due date"
                                 inputFormat="MM/dd/yyyy"
-                                value={dueDate ? dueDate: null}
+                                value={dueDate ? dueDate : null}
                                 minDate={!dueDate ? today : null}
                                 onChange={(selectedDate) => {
                                   selectDueDate(id, selectedDate);
