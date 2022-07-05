@@ -199,40 +199,49 @@ function Todos() {
 
     const prevTodos = todos;
     const sourceId = todos[result.source.index].id;
-    const newIndex = result.destination.index;
+    const destinationIndex = result.destination.index;
+    const sourceIndex = result.source.index;
+
+    if(sourceIndex === destinationIndex) return;
 
     const items = Array.from(todos);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     let newId = null;
     let body = null;
-    if (totalTasks > todos?.length && newIndex === (todos?.length - 1)) {
+    let prevId = null, nextId = null;
+    if (totalTasks > todos?.length && destinationIndex === (todos?.length - 1)) {
       body = JSON.stringify({
         updatedId: null,
-        prevId: todos[newIndex].id
+        prevId: todos[destinationIndex].id
       })
 
     } else {
       switch (result.destination.index) {
         case 0: {
-          newId = todos[newIndex].id - 1000;
+          newId = todos[destinationIndex].id - 1000;
           reorderedItem.id = newId;
           break;
         }
         case todos.length - 1: {
-          newId = todos[newIndex].id + 1000;
+          newId = todos[destinationIndex].id + 1000;
           reorderedItem.id = newId;
           break;
         }
         default: {
-          const prevId = todos[newIndex - 1].id;
-          const nextId = todos[newIndex + 1].id;
+          if(sourceIndex > destinationIndex){
+            prevId = todos[destinationIndex - 1].id;
+            nextId = todos[destinationIndex].id;
+          }else if (destinationIndex > sourceIndex){
+            prevId = todos[destinationIndex].id;
+            nextId = todos[destinationIndex + 1].id;
+          }
+          
           newId = Math.round((parseInt(prevId) + parseInt(nextId)) / 2);
           console.log(newId);
           reorderedItem.id = newId;
           break;
         }
-
       }
       body = JSON.stringify({
         updatedId: newId?.toString(),
