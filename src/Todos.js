@@ -67,7 +67,7 @@ function Todos() {
       if (totalTasks > todos.length) {
         console.log(lastElement);
 
-        fetch(`http://localhost:3001/loadtasks/${lastElement}`, {
+        fetch(`http://localhost:3001/loadtasks/${todos[todos.length-1]?.id}`, {
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
@@ -130,7 +130,7 @@ function Todos() {
       method: "POST",
       body: JSON.stringify({ text }),
     })
-      .then((response) => response.json())
+      .then((response) => console.log(response.json()))
       .then((todo) => {
         setTotalTasks(totalTasks + 1);
         setTodos([...todos, todo])
@@ -213,7 +213,7 @@ function Todos() {
     if (totalTasks > todos?.length && destinationIndex === (todos?.length - 1)) {
       body = JSON.stringify({
         updatedId: null,
-        prevId: todos[destinationIndex].id
+        destinationId: todos[destinationIndex].id
       })
 
     } else {
@@ -245,7 +245,7 @@ function Todos() {
       }
       body = JSON.stringify({
         updatedId: newId?.toString(),
-        prevId: null
+        destinationId: null
       })
     }
     fetch(`http://localhost:3001/updateId/${sourceId}`, {
@@ -255,8 +255,14 @@ function Todos() {
       },
       method: "PUT",
       body: body,
-    }).then(() => {
+    }).then((response) => response.json())
+    .then((updatedIdObj) => {
+      reorderedItem.id = updatedIdObj.updatedId;
       setTodos(items);
+      
+      //console.log(todos[todos.length-1])
+      //setLastElement(responseTodos?.response[responseTodos.response.length-1]?.id)
+      //console.log(lastElement)
     }).catch(() => {
       //setTodos(prevTodos);
     });
@@ -283,26 +289,6 @@ function Todos() {
   }
 
 
-  function loadMoreTasks() {
-    if (totalTasks > todos?.length) {
-   
-
-    fetch(`http://localhost:3001/loadtasks`, {
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        body: JSON.stringify({
-          id: todos[todos.length-1].id,
-        }),
-      },
-      method: "GET",
-    }).then((response) => response.json())
-      .then((todos) => {
-        setTodos(todos)
-
-      });
-  }
-  }
 
 
 
@@ -402,7 +388,6 @@ function Todos() {
         </Droppable>
       </DragDropContext>
       {loading && <p>Loading...</p>}
-      {error && <p>Error!</p>}
       <div ref={loader} />
     </Container>
   );
