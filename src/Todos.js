@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+//import useFetch from "./customhook/useFetch";
 import makeStyles from "@mui/styles/makeStyles";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -43,20 +44,78 @@ const useStyles = makeStyles({
 function Todos() {
   const classes = useStyles();
   const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [newTodoText, setNewTodoText] = useState("");
   const [totalTasks, setTotalTasks] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [lastElement, setLastElement] = useState(null);
+  const loader = useRef(null);
+  const [page, setPage] = useState(1);
   const today = new Date().setHours(0, 0, 0, 0);
+
+  const handleObserver = useCallback((entries) => {
+    const target = entries[0];
+    if (target.isIntersecting) {
+      setPage((prev) => prev + 1);
+    }
+  }, []);
+
+  const sendQuery = useCallback( () => {
+    try {
+        setLoading(true);
+        setError(false);
+      if (totalTasks > todos.length) {
+        console.log(lastElement);
+
+        fetch(`http://localhost:3001/loadtasks/${lastElement}`, {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          method: "GET",
+        }).then((response) => response.json())
+          .then((newTodos) => {
+            setTodos((prev) => [...prev, ...newTodos])
+            console.log(todos[todos.length -1].id);
+            setLastElement(newTodos[newTodos.length-1]?.id)
+
+          });
+      }
+      setLoading(false);
+    } catch (err) {
+      setError(err);
+    }
+  }, [ page]);
+
+  useEffect(() => {
+    sendQuery();
+  }, [ page]);
+
 
   useEffect(() => {
     fetch("http://localhost:3001/")
       .then((response) => response.json())
-      .then((todos) => {
-        console.log(todos);
-        setTodos(todos?.response)
+      .then((responseTodos) => {
+        
+        setTodos(responseTodos?.response)
+        setTotalTasks(responseTodos?.totalTasks);
+        console.log(todos[todos.length-1])
+        setLastElement(responseTodos?.response[responseTodos.response.length-1]?.id)
+        console.log(lastElement)
       });
-    setTotalTasks(todos?.totalTasks);
-  }, [setTodos]);
+    
+   
+  }, []);
+
+  useEffect(() => {
+    const option = {
+      root: null,
+      rootMargin: "20px",
+      threshold: 0
+    };
+    const observer = new IntersectionObserver(handleObserver, option);
+    if (loader.current) observer.observe(loader.current);
+  }, [handleObserver]);
 
   function addTodo(text) {
     if (text === "") {
@@ -146,8 +205,8 @@ function Todos() {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     let newId = null;
-    let body = null; 
-    if (totalTasks > todos?.length) {
+    let body = null;
+    if (totalTasks > todos?.length && newIndex === (todos?.length - 1)) {
       body = JSON.stringify({
         updatedId: null,
         prevId: todos[newIndex].id
@@ -176,7 +235,7 @@ function Todos() {
 
       }
       body = JSON.stringify({
-        updatedId: newId.toString(),
+        updatedId: newId?.toString(),
         prevId: null
       })
     }
@@ -240,6 +299,7 @@ function Todos() {
 
 
 
+
   return (
     <Container maxWidth="md">
       <Typography variant="h3" component="h1" gutterBottom>
@@ -281,7 +341,7 @@ function Todos() {
               <Paper className={classes.todosContainer}>
                 <Box display="flex" flexDirection="column" alignItems="stretch" {...provided.droppableProps} ref={provided.innerRef}>
                   {todos.map(({ id, text, dueDate, completed }, index) => (
-                    <Draggable key={id} draggableId={id.toString()} index={index}>
+                    <Draggable key={id} draggableId={id?.toString()} index={index}>
                       {(provided) => (
                         <Box
                           ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}
@@ -332,6 +392,9 @@ function Todos() {
             ))}
         </Droppable>
       </DragDropContext>
+      {loading && <p>Loading...</p>}
+      {error && <p>Error!</p>}
+      <div ref={loader} />
     </Container>
   );
 }
