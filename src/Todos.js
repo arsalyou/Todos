@@ -118,7 +118,7 @@ function Todos() {
   }, [handleObserver]);
 
   function addTodo(text) {
-    if (text === "") {
+    if (text === ""){
       alert("Add Task Name");
       return;
     }
@@ -130,13 +130,41 @@ function Todos() {
       method: "POST",
       body: JSON.stringify({ text }),
     })
-      .then((response) => console.log(response.json()))
+      .then((response) => response.json())
       .then((todo) => {
         setTotalTasks(totalTasks + 1);
         setTodos([...todos, todo])
       });
     setNewTodoText("");
   }
+
+  // function addTodo(text) {
+  //   if (text === "") {
+  //     alert("Add Task Name");
+  //     return;
+  //   }
+  //   fetch("http://localhost:3001/", {
+  //     headers: {
+  //       Accept: "application/json",
+  //       "Content-Type": "application/json",
+  //     },
+  //     method: "POST",
+  //     body: JSON.stringify({ text }),
+  //   })
+  //     .then((response) => {
+  //       console.log(response.json());
+  //       console.log('here')
+  //     })
+  //     .then((todo) => {
+  //       if (todo){
+  //         setTotalTasks(totalTasks + 1);
+  //         setTodos([...todos, todo])
+  //       }
+  //     }).catch((error) => {
+  //       alert(error);
+  //       console.log(error)});
+  //   setNewTodoText("");
+  // }
 
   function selectDueDate(id, dueDate) {
     if (dueDate < today) {
@@ -269,10 +297,14 @@ function Todos() {
     setTodos(items);
   }
 
-  function filterTask() {
+function  filterTask() {
     if (totalTasks === todos?.length) {
+      todos.forEach(to=>{
+        console.log(new Date(to.dueDate).getMilliseconds() === new Date(today).getMilliseconds())
+      });
+     
     const fiteredTasks = todos.filter(todoTask => {
-      todoTask.dueDate === today
+      new Date(todoTask.dueDate).getMilliseconds() === new Date(today).getMilliseconds()
     })
     setTodos(fiteredTasks);
   }else{
