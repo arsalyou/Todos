@@ -37,11 +37,9 @@ const useStyles = makeStyles({
   });
 
 
-function AddTask({ setTodos, setTotalTasks}) {
+function AddTask({ setTodos, totalTasks, loadedTaskCount, setTotalTasks, setLoadedTaskCount}) {
     const [newTodoText, setNewTodoText] = useState("");
     const classes = useStyles();
-
-   
 
     function addTodo(text) {
         if (text === "") {
@@ -58,8 +56,14 @@ function AddTask({ setTodos, setTotalTasks}) {
         })
             .then((response) => response.json())
             .then((todo) => {
-                setTotalTasks(totalTasks + 1);
-                setTodos((prev) => [...prev, todo])
+                if(totalTasks > loadedTaskCount){
+                     // task added but to keep order of id, not loading it on frontend other startegy was to move assigning of ids at backend
+                     alert('Task successfully added. Scroll to Load and view task');
+                }else{
+                    setTodos((prev) => [...prev, todo])
+                    setLoadedTaskCount((prev)=> prev+1);
+                }
+                setTotalTasks((prev)=> prev+1); 
             });
         setNewTodoText("");
     }

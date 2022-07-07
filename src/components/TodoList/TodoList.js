@@ -39,14 +39,12 @@ const useStyles = makeStyles({
   },
 });
 
-function TodoList({ todos, setTodos }) {
+function TodoList({ todos, setTodos, setTotalTasks, totalTasks, setLoadedTaskCount, sendQuery}) {
   const classes = useStyles();
 
-
-  
   function handleOnDragEnd(result) {
     if (!result.destination) return;
-
+    
     const prevTodos = todos;
     const sourceId = todos[result.source.index].id;
     const destinationIndex = result.destination.index;
@@ -127,7 +125,7 @@ function TodoList({ todos, setTodos }) {
             <Paper className={classes.todosContainer}>
               <Box display="flex" flexDirection="column" alignItems="stretch" {...provided.droppableProps} ref={provided.innerRef}>
                 {todos.map(({ id, text, dueDate, completed }, index) => (
-                  <Todo todos={todos} setTodos={setTodos} id={id} text={text} dueDate={dueDate} completed={completed} />
+                  <Todo key={id} todos={todos} setTodos={setTodos} id={id} text={text} dueDate={dueDate} completed={completed} setTotalTasks={setTotalTasks} index={index} setLoadedTaskCount={setLoadedTaskCount} totalTasks={totalTasks} sendQuery={sendQuery}/>
                 ))}
                 {provided.placeholder}
               </Box>

@@ -15,13 +15,17 @@ import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 
 
 
-function DatePicker({todos, setTodos, dueDate}) {
+function DatePicker({id, todos, setTodos, dueDate}) {
   const today = new Date().setHours(0, 0, 0, 0);
-
 
     function selectDueDate(id, dueDate) {
         if (dueDate < today) {
           alert('Due date can not be past date');
+          return;
+        }
+        let index = todos?.findIndex((todo) => todo.id === id);
+        if (todos[index].completed){
+          alert('This task is already completed. You can uncheck it to set due date.');
           return;
         }
         console.log(dueDate);

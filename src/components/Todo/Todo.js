@@ -40,11 +40,46 @@ import {
 } from "@mui/material";
 
 
-function Todo({ todos, setTodos, id, text, dueDate, completed }) {
+function Todo({ todos, setTodos, id, text, dueDate, completed, setTotalTasks, index , setLoadedTaskCount, totalTasks, sendQuery}) {
   const classes = useStyles();
 
+  function deleteTodo(id) {
+    fetch(`http://localhost:3001/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      setTotalTasks((prev)=>prev - 1);
+      setTodos(todos.filter((todo) => todo.id !== id))
+      setLoadedTaskCount((prev)=>prev - 1);
+      if(todos?.length < totalTasks && todos?.length < 10){
+        sendQuery();
+      }
+    });
+  }
+
+  function toggleTodoCompleted(id) {
+    fetch(`http://localhost:3001/${id}`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+      body: JSON.stringify({
+        completed: !todos.find((todo) => todo.id === id).completed,
+      }),
+    }).then(() => {
+      const newTodos = [...todos];
+      const modifiedTodoIndex = newTodos.findIndex((todo) => todo.id === id);
+      newTodos[modifiedTodoIndex] = {
+        ...newTodos[modifiedTodoIndex],
+        completed: !newTodos[modifiedTodoIndex].completed,
+      };
+      setTodos(newTodos);
+    });
+  }
+
+
     return (
-        <Draggable key={id} draggableId={id?.toString()} index={id}>
+        <Draggable key={id} draggableId={id?.toString()} index={index}>
                       {(provided) => (
                         <Box
                           ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}
@@ -65,7 +100,7 @@ function Todo({ todos, setTodos, id, text, dueDate, completed }) {
                             >
                               {text}
                             </Typography>
-                            <DatePicker todos={todos} setTodos={setTodos}  dueDate={dueDate}/>
+                            <DatePicker id={id} todos={todos} setTodos={setTodos}  dueDate={dueDate}/>
                           </Box>
                           <Button
                             className={classes.deleteTodo}

@@ -21,6 +21,7 @@ function TodoPage() {
     const loader = useRef(null);
     const [loadMore, setLoadMore] = useState(1);
     const today = new Date().setHours(0, 0, 0, 0);
+    const [loadedTaskCount, setLoadedTaskCount] = useState(0);
 
     const handleObserver = useCallback((entries) => {
         const target = entries[0];
@@ -29,11 +30,10 @@ function TodoPage() {
         }
     }, []);
 
-    const sendQuery = useCallback( () => {
+    const sendQuery = () => {
         try {
             setLoading(true);
           if (totalTasks > todos.length) {
-            console.log(lastElement);
     
             fetch(`http://localhost:3001/loadtasks/${todos[todos.length-1]?.id}`, {
               headers: {
@@ -44,13 +44,14 @@ function TodoPage() {
             }).then((response) => response.json())
               .then((newTodos) => {
                 setTodos((prev) => [...prev, ...newTodos])    
+                setLoadedTaskCount(todos?.length);
               });
           }
           setLoading(false);
         } catch (err) {
             console.log(err);
         }
-      }, [loadMore]);
+      };
 
     useEffect(() => {
         sendQuery();
@@ -72,17 +73,20 @@ function TodoPage() {
           .then((responseTodos) => {
             setTodos(responseTodos?.response)
             setTotalTasks(responseTodos?.totalTasks);
+            setLoadedTaskCount(responseTodos?.length);
           });
       }, []);
-
-
 
     return (
         <Container maxWidth="md">
             <Header title="Todos" />
-            <FilterTasks todos={todos} setTodos={setTodos} setTotalTasks={setTotalTasks}/>
-            <AddTask setTodos={setTodos} setTotalTasks={setTotalTasks}/>
-            <TodoList todos={todos} setTodos={setTodos} />
+            <FilterTasks todos={todos} setTodos={setTodos} setTotalTasks={setTotalTasks} />
+            <AddTask setTodos={setTodos} totalTasks={totalTasks} loadedTaskCount={loadedTaskCount} setTotalTasks={setTotalTasks} setLoadedTaskCount={setLoadedTaskCount}/>
+            {todos?.length > 0 ? 
+            <TodoList todos={todos} setTodos={setTodos} setTotalTasks={setTotalTasks} totalTasks={totalTasks} setLoadedTaskCount={setLoadedTaskCount} sendQuery={sendQuery}/> :
+            <p>No Task Added...</p>
+            }
+
             {loading && <p>Loading...</p>}
             <div ref={loader} />
         </Container>
