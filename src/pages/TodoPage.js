@@ -4,14 +4,7 @@ import FilterTasks from '../components/FilterTasks/FilterTasks';
 import AddTask from '../components/AddTask/AddTask';
 import TodoList from '../components/TodoList/TodoList';
 import {
-  Container,
-  Typography,
-  Button,
-  Icon,
-  Paper,
-  Box,
-  TextField,
-  Checkbox,
+  Container
 } from "@mui/material";
 
 function TodoPage() {
@@ -20,7 +13,6 @@ function TodoPage() {
     const [loading, setLoading] = useState(true);
     const loader = useRef(null);
     const [loadMore, setLoadMore] = useState(1);
-    const today = new Date().setHours(0, 0, 0, 0);
     const [loadedTaskCount, setLoadedTaskCount] = useState(0);
 
     const handleObserver = useCallback((entries) => {
@@ -72,21 +64,21 @@ function TodoPage() {
           .then((response) => response.json())
           .then((responseTodos) => {
             setTodos(responseTodos?.response)
+            console.log(responseTodos?.totalTasks);
             setTotalTasks(responseTodos?.totalTasks);
-            setLoadedTaskCount(responseTodos?.length);
+            setLoadedTaskCount(responseTodos?.response?.length);
           });
       }, []);
 
     return (
         <Container maxWidth="md">
             <Header title="Todos" />
-            <FilterTasks todos={todos} setTodos={setTodos} setTotalTasks={setTotalTasks} />
+            <FilterTasks todos={todos} setTodos={setTodos} totalTasks={totalTasks} />
             <AddTask setTodos={setTodos} totalTasks={totalTasks} loadedTaskCount={loadedTaskCount} setTotalTasks={setTotalTasks} setLoadedTaskCount={setLoadedTaskCount}/>
             {todos?.length > 0 ? 
             <TodoList todos={todos} setTodos={setTodos} setTotalTasks={setTotalTasks} totalTasks={totalTasks} setLoadedTaskCount={setLoadedTaskCount} sendQuery={sendQuery}/> :
             <p>No Task Added...</p>
             }
-
             {loading && <p>Loading...</p>}
             <div ref={loader} />
         </Container>

@@ -1,41 +1,17 @@
 import React, { useState } from 'react';
 import makeStyles from "@mui/styles/makeStyles";
 import {
-    Container,
-    Typography,
     Button,
     Icon,
     Paper,
     Box,
     TextField,
-    Checkbox,
 } from "@mui/material";
 
 const useStyles = makeStyles({
     addTodoContainer: { padding: 10 },
     addTodoButton: { marginLeft: 5 },
-    todosContainer: { marginTop: 10, padding: 10 },
-    todoContainer: {
-      borderTop: "1px solid #bfbfbf",
-      marginTop: 5,
-      "&:first-child": {
-        margin: 0,
-        borderTop: "none",
-      },
-      "&:hover": {
-        "& $deleteTodo": {
-          visibility: "visible",
-        },
-      },
-    },
-    todoTextCompleted: {
-      textDecoration: "line-through",
-    },
-    deleteTodo: {
-      visibility: "hidden",
-    },
   });
-
 
 function AddTask({ setTodos, totalTasks, loadedTaskCount, setTotalTasks, setLoadedTaskCount}) {
     const [newTodoText, setNewTodoText] = useState("");
@@ -74,6 +50,7 @@ function AddTask({ setTodos, totalTasks, loadedTaskCount, setTotalTasks, setLoad
                 <Box flexGrow={1}>
                     <TextField
                         fullWidth
+                        placeholder='Add a new todo'
                         value={newTodoText}
                         onKeyPress={(event) => {
                             if (event.key === "Enter") {

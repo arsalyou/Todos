@@ -103,8 +103,6 @@ function Todos() {
         setLastElement(responseTodos?.response[responseTodos.response.length-1]?.id)
         console.log(lastElement)
       });
-    
-   
   }, []);
 
   useEffect(() => {

@@ -2,16 +2,10 @@ import React from 'react';
 import Todo from '../Todo/Todo';
 import makeStyles from "@mui/styles/makeStyles";
 
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import {
-  Container,
-  Typography,
-  Button,
-  Icon,
   Paper,
   Box,
-  TextField,
-  Checkbox,
 } from "@mui/material";
 
 const useStyles = makeStyles({
@@ -39,18 +33,18 @@ const useStyles = makeStyles({
   },
 });
 
-function TodoList({ todos, setTodos, setTotalTasks, totalTasks, setLoadedTaskCount, sendQuery}) {
+function TodoList({ todos, setTodos, setTotalTasks, totalTasks, setLoadedTaskCount, sendQuery }) {
   const classes = useStyles();
 
   function handleOnDragEnd(result) {
     if (!result.destination) return;
-    
+
     const prevTodos = todos;
     const sourceId = todos[result.source.index].id;
     const destinationIndex = result.destination.index;
     const sourceIndex = result.source.index;
 
-    if(sourceIndex === destinationIndex) return;
+    if (sourceIndex === destinationIndex) return;
 
     const items = Array.from(todos);
     const [reorderedItem] = items.splice(result.source.index, 1);
@@ -77,14 +71,14 @@ function TodoList({ todos, setTodos, setTotalTasks, totalTasks, setLoadedTaskCou
           break;
         }
         default: {
-          if(sourceIndex > destinationIndex){
+          if (sourceIndex > destinationIndex) {
             prevId = todos[destinationIndex - 1].id;
             nextId = todos[destinationIndex].id;
-          }else if (destinationIndex > sourceIndex){
+          } else if (destinationIndex > sourceIndex) {
             prevId = todos[destinationIndex].id;
             nextId = todos[destinationIndex + 1].id;
           }
-          
+
           newId = Math.round((parseInt(prevId) + parseInt(nextId)) / 2);
           console.log(newId);
           reorderedItem.id = newId;
@@ -104,16 +98,13 @@ function TodoList({ todos, setTodos, setTotalTasks, totalTasks, setLoadedTaskCou
       method: "PUT",
       body: body,
     }).then((response) => response.json())
-    .then((updatedIdObj) => {
-      reorderedItem.id = updatedIdObj.updatedId;
-      setTodos(items);
-      
-      //console.log(todos[todos.length-1])
-      //setLastElement(responseTodos?.response[responseTodos.response.length-1]?.id)
-      //console.log(lastElement)
-    }).catch(() => {
-      //setTodos(prevTodos);
-    });
+      .then((updatedIdObj) => {
+        reorderedItem.id = updatedIdObj.updatedId;
+        setTodos(items);
+      }).catch(() => {
+        //setTodos(prevTodos);
+        alert('Some error occur');
+      });
     setTodos(items);
   }
 
@@ -125,7 +116,7 @@ function TodoList({ todos, setTodos, setTotalTasks, totalTasks, setLoadedTaskCou
             <Paper className={classes.todosContainer}>
               <Box display="flex" flexDirection="column" alignItems="stretch" {...provided.droppableProps} ref={provided.innerRef}>
                 {todos.map(({ id, text, dueDate, completed }, index) => (
-                  <Todo key={id} todos={todos} setTodos={setTodos} id={id} text={text} dueDate={dueDate} completed={completed} setTotalTasks={setTotalTasks} index={index} setLoadedTaskCount={setLoadedTaskCount} totalTasks={totalTasks} sendQuery={sendQuery}/>
+                  <Todo key={id} todos={todos} setTodos={setTodos} id={id} text={text} dueDate={dueDate} completed={completed} setTotalTasks={setTotalTasks} index={index} setLoadedTaskCount={setLoadedTaskCount} totalTasks={totalTasks} sendQuery={sendQuery} />
                 ))}
                 {provided.placeholder}
               </Box>

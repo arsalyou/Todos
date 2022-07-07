@@ -1,51 +1,37 @@
 import React from 'react';
 import {
-    Container,
-    Stack,
-    Button,
-    Icon,
-    Paper,
-    Box,
-    TextField,
-    Checkbox,
-  } from "@mui/material";
+  Button
+} from "@mui/material";
 
-function FilterTasks(todos, setTodos) {
+function FilterTasks({ todos, setTodos, totalTasks }) {
+  // const today = new Date().toISOString().split('T')[0];
 
-    function  filterTodos() {
-        if (totalTasks === todos?.length) {
-          todos.forEach(to=>{
-            console.log(new Date(to.dueDate).getMilliseconds() === new Date(today).getMilliseconds())
-          });
-         
-        const fiteredTasks = todos.filter(todoTask => {
-          new Date(todoTask.dueDate).getMilliseconds() === new Date(today).getMilliseconds()
-        })
-        setTodos(fiteredTasks);
-      }else{
-    
-        fetch(`http://localhost:3001/duetaskstoday`, {
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          method: "GET",
-        }).then((response) => response.json())
-          .then((filteredTodos) => setTodos(filteredTodos));
-      }
-      }
+  function filterTodos() {
+    //   if (totalTasks === todos?.length) {
+    //     todos?.forEach(todo=>{
+    //       console.log(todo?.dueDate?.split('T')[0] === today)
+    //     });
 
-    const clearFilter = () => {
-        setTodos(todos);
+    //   const fiteredTasks = todos.filter(todoTask => {
+    //     todo?.dueDate?.split('T')[0] === today
+    //   })
+    //   setTodos(fiteredTasks);
+    // }else{
 
-    }
+    fetch(`http://localhost:3001/duetaskstoday`, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      method: "GET",
+    }).then((response) => response.json())
+      .then((filteredTodos) => setTodos(filteredTodos));
 
-    return (
-        <Stack direction='row' sx={{m: 2}}>
-            <Button  onClick={filterTodos}>Filter Due Tasks Today</Button>
-            <Button  onClick={clearFilter}>Clear Filter</Button>
-        </Stack>
-    );
+  }
+
+  return (
+    <Button variant='outlined' onClick={filterTodos}>Filter Due Tasks Today</Button>
+  );
 }
 
 export default FilterTasks;
