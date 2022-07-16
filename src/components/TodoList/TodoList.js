@@ -103,7 +103,7 @@ function TodoList({ todos, setTodos, setTotalTasks, totalTasks, setLoadedTaskCou
         setTodos(items);
       }).catch(() => {
         //setTodos(prevTodos);
-        alert('Some error occur');
+        //alert('Some error occur');
       });
     setTodos(items);
   }

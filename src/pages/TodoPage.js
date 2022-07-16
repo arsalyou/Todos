@@ -21,8 +21,9 @@ function TodoPage() {
             setLoadMore((prev) => prev + 1);
         }
     }, []);
-
-    const sendQuery = () => {
+    console.log(loadMore);
+    const sendQuery = useCallback(() => {
+      console.log(loadMore);
         try {
             setLoading(true);
           if (totalTasks > todos.length) {
@@ -43,7 +44,7 @@ function TodoPage() {
         } catch (err) {
             console.log(err);
         }
-      };
+      }, [loadMore]);
 
     useEffect(() => {
         sendQuery();
@@ -73,7 +74,7 @@ function TodoPage() {
     return (
         <Container maxWidth="md">
             <Header title="Todos" />
-            <FilterTasks todos={todos} setTodos={setTodos} totalTasks={totalTasks} />
+            <FilterTasks todos={todos} totalTasks={totalTasks} />
             <AddTask setTodos={setTodos} totalTasks={totalTasks} loadedTaskCount={loadedTaskCount} setTotalTasks={setTotalTasks} setLoadedTaskCount={setLoadedTaskCount}/>
             {todos?.length > 0 ? 
             <TodoList todos={todos} setTodos={setTodos} setTotalTasks={setTotalTasks} totalTasks={totalTasks} setLoadedTaskCount={setLoadedTaskCount} sendQuery={sendQuery}/> :
