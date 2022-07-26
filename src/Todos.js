@@ -357,6 +357,12 @@ function  filterTask() {
           >
             Filter due tasks
           </Button>
+          <Button
+            className={classes.addTodoButton}
+            onClick={filterTask}
+          >
+            Clear Filter
+          </Button>
         </Box>
       </Paper>
       <DragDropContext onDragEnd={handleOnDragEnd}>

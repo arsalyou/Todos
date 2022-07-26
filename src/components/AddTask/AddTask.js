@@ -7,14 +7,17 @@ import {
     Box,
     TextField,
 } from "@mui/material";
-
+import useStore from '../../store';
+import DatePicker from '../DatePicker/DatePicker';
 const useStyles = makeStyles({
     addTodoContainer: { padding: 10 },
     addTodoButton: { marginLeft: 5 },
   });
 
-function AddTask({ setTodos, totalTasks, loadedTaskCount, setTotalTasks, setLoadedTaskCount}) {
+function AddTask({ totalTasks, setTotalTasks}) {
     const [newTodoText, setNewTodoText] = useState("");
+    const todos = useStore(state => state.todos);
+    const setTodos = useStore(state => state.setTodos);
     const classes = useStyles();
 
     function addTodo(text) {
@@ -32,12 +35,11 @@ function AddTask({ setTodos, totalTasks, loadedTaskCount, setTotalTasks, setLoad
         })
             .then((response) => response.json())
             .then((todo) => {
-                if(totalTasks > loadedTaskCount){
+                if(totalTasks > todos.length){
                      // task added but to keep order of id, not loading it on frontend other startegy was to move assigning of ids at backend
                      alert('Task successfully added. Scroll to Load and view task');
                 }else{
-                    setTodos((prev) => [...prev, todo])
-                    setLoadedTaskCount((prev)=> prev+1);
+                    setTodos( [...todos, todo])
                 }
                 setTotalTasks((prev)=> prev+1); 
             });
@@ -60,6 +62,7 @@ function AddTask({ setTodos, totalTasks, loadedTaskCount, setTotalTasks, setLoad
                         onChange={(event) => setNewTodoText(event.target.value)}
                     />
                 </Box>
+                {/* <DatePicker /> */}
                 <Button
                     className={classes.addTodoButton}
                     startIcon={<Icon>add</Icon>}

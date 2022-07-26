@@ -3,6 +3,7 @@ import Todo from '../Todo/Todo';
 import makeStyles from "@mui/styles/makeStyles";
 
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import useStore from '../../store';
 import {
   Paper,
   Box,
@@ -33,9 +34,10 @@ const useStyles = makeStyles({
   },
 });
 
-function TodoList({ todos, setTodos, setTotalTasks, totalTasks, setLoadedTaskCount, sendQuery }) {
+function TodoList({  setTotalTasks, totalTasks, sendQuery }) {
   const classes = useStyles();
-
+  const todos = useStore(state=> state.todos);
+  const setTodos = useStore(state => state.setTodos);
   function handleOnDragEnd(result) {
     if (!result.destination) return;
 
@@ -116,7 +118,7 @@ function TodoList({ todos, setTodos, setTotalTasks, totalTasks, setLoadedTaskCou
             <Paper className={classes.todosContainer}>
               <Box display="flex" flexDirection="column" alignItems="stretch" {...provided.droppableProps} ref={provided.innerRef}>
                 {todos.map(({ id, text, dueDate, completed }, index) => (
-                  <Todo key={id} todos={todos} setTodos={setTodos} id={id} text={text} dueDate={dueDate} completed={completed} setTotalTasks={setTotalTasks} index={index} setLoadedTaskCount={setLoadedTaskCount} totalTasks={totalTasks} sendQuery={sendQuery} />
+                  <Todo key={id} id={id} text={text} dueDate={dueDate} completed={completed} setTotalTasks={setTotalTasks} index={index} totalTasks={totalTasks} sendQuery={sendQuery} />
                 ))}
                 {provided.placeholder}
               </Box>

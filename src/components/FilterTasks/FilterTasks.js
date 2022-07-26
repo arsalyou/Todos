@@ -1,34 +1,16 @@
 import React, { useState } from 'react';
+import useStore from '../../store';
 
 import {
-  Button, Dialog, Stack, DialogTitle
+  Button, Switch, Stack, DialogTitle
 } from "@mui/material";
 
-function FilterTasks({ todos, totalTasks }) {
+function FilterTasks({ filterApplied, setFilterApplied  }) {
   // const today = new Date().toISOString().split('T')[0];
-  const [open, setOpen] = useState(false);
-  const [todayTasks, setTodayTasks] = useState([]);
-  const handleClose = (event, reason) => {
-    setOpen(false);
-  }
-
-  const openDialog = () => {
-    setTabIndex(0);
-    setOpen(true);
-  }
-
+  const todos = useStore(state => state.todos);
+  const setTodos = useStore(state => state.setTodos);
+ 
   function filterTodos() {
-
-    //   if (totalTasks === todos?.length) {
-    //     todos?.forEach(todo=>{
-    //       console.log(todo?.dueDate?.split('T')[0] === today)
-    //     });
-
-    //   const fiteredTasks = todos.filter(todoTask => {
-    //     todo?.dueDate?.split('T')[0] === today
-    //   })
-    //   setTodos(fiteredTasks);
-    // }else{
 
     fetch(`http://localhost:3001/duetaskstoday`, {
       headers: {
@@ -38,31 +20,30 @@ function FilterTasks({ todos, totalTasks }) {
       method: "GET",
     }).then((response) => response.json())
       .then((filteredTodos) => {
-        setTodayTasks(filteredTodos);
-        setOpen(true);
+        setTodos(filteredTodos);
       });
 
+  }
 
+  const handleToggle = () => {
+    setFilterApplied(prev => !prev);
+   console.log(filterApplied);
+};
+
+  function clearFilter(){
+    console.log(setClearFilter);
+    setClearFilter((prev) => !prev) ;
   }
 
   return (
   <>
-    <Dialog open={open} onClose={handleClose} >
-    <DialogTitle>{"Result"}</DialogTitle>
-      <Stack spacing={1} sx={{ alignItems: 'center', p: 1 }}>
-      <ul>
-        {
-          todayTasks?.length > 0 ?
-              todayTasks.map(todayTask => (
-                <li>{todayTask?.text}</li>
-              ))
-            :
-            <h6>No Task Found</h6>
-        }
-        </ul>
-      </Stack>
-    </Dialog>
-    <Button variant='outlined' onClick={filterTodos}>Filter Due Tasks Today</Button>
+  <Switch 
+      checked={filterApplied}
+      onClick={handleToggle}
+      />
+      Filter Due Tasks Today
+    {/* <Button variant='outlined' onClick={filterTodos}>Filter Due Tasks Today</Button>
+    <Button variant='outlined' onClick={clearFilter}>Clear Filter</Button> */}
   </>
 
   );

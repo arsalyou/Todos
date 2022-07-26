@@ -34,10 +34,13 @@ import {
   Box,
   Checkbox,
 } from "@mui/material";
+import useStore from '../../store';
 
 
-function Todo({ todos, setTodos, id, text, dueDate, completed, setTotalTasks, index, setLoadedTaskCount, totalTasks, sendQuery }) {
+function Todo({ id, text, dueDate, completed, setTotalTasks, index, totalTasks, sendQuery }) {
   const classes = useStyles();
+  const todos = useStore(state=> state.todos);
+  const setTodos = useStore(state => state.setTodos);
 
   function deleteTodo(id) {
     fetch(`http://localhost:3001/${id}`, {
@@ -45,7 +48,6 @@ function Todo({ todos, setTodos, id, text, dueDate, completed, setTotalTasks, in
     }).then(() => {
       setTotalTasks((prev) => prev - 1);
       setTodos(todos.filter((todo) => todo.id !== id))
-      setLoadedTaskCount((prev) => prev - 1);
       if (todos?.length < totalTasks && todos?.length < 10) {
         sendQuery();
       }
@@ -61,6 +63,7 @@ function Todo({ todos, setTodos, id, text, dueDate, completed, setTotalTasks, in
       method: "PUT",
       body: JSON.stringify({
         completed: !todos.find((todo) => todo.id === id).completed,
+        
       }),
     }).then(() => {
       const newTodos = [...todos];
@@ -98,7 +101,7 @@ function Todo({ todos, setTodos, id, text, dueDate, completed, setTotalTasks, in
             >
               {text}
             </Typography>
-            <DatePicker id={id} todos={todos} setTodos={setTodos} dueDate={dueDate} />
+            <DatePicker id={id} dueDate={dueDate} />
           </Box>
           <Button
             className={classes.deleteTodo}

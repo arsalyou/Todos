@@ -3,17 +3,21 @@ import Header from '../components/Header/Header';
 import FilterTasks from '../components/FilterTasks/FilterTasks';
 import AddTask from '../components/AddTask/AddTask';
 import TodoList from '../components/TodoList/TodoList';
+import useStore from '../store';
 import {
   Container
 } from "@mui/material";
 
 function TodoPage() {
-    const [todos, setTodos] = useState([]);
+    
+    const todos = useStore(state => state.todos);
+    const setTodos = useStore(state => state.setTodos);
+    //const [todos, setTodos] = useState([]);
     const [totalTasks, setTotalTasks] = useState(0);
     const [loading, setLoading] = useState(true);
     const loader = useRef(null);
     const [loadMore, setLoadMore] = useState(1);
-    const [loadedTaskCount, setLoadedTaskCount] = useState(0);
+    const [filterApplied, setFilterApplied] = React.useState(false);
 
     const handleObserver = useCallback((entries) => {
         const target = entries[0];
@@ -21,6 +25,8 @@ function TodoPage() {
             setLoadMore((prev) => prev + 1);
         }
     }, []);
+
+
     console.log(loadMore);
     const sendQuery = useCallback(() => {
       console.log(loadMore);
@@ -28,7 +34,7 @@ function TodoPage() {
             setLoading(true);
           if (totalTasks > todos.length) {
     
-            fetch(`http://localhost:3001/loadtasks/${todos[todos.length-1]?.id}`, {
+            fetch(`http://localhost:3001/loadTasksNew/${todos[todos.length-1]?.id}`, {
               headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
@@ -36,19 +42,24 @@ function TodoPage() {
               method: "GET",
             }).then((response) => response.json())
               .then((newTodos) => {
-                setTodos((prev) => [...prev, ...newTodos])    
-                setLoadedTaskCount(todos?.length);
+                //setTodos((prev) => [...prev, ...newTodos]);
+                setTodos([...todos, ...newTodos]);
+                console.log('todos?.length '+ todos?.length);    
               });
           }
           setLoading(false);
         } catch (err) {
             console.log(err);
         }
-      }, [loadMore]);
+      }, [loadMore, filterApplied]);
 
     useEffect(() => {
         sendQuery();
     }, [ loadMore]);
+
+    useEffect(() => {
+      sendQuery();
+  }, [ filterApplied]);
 
     useEffect(() => {
         const option = {
@@ -59,6 +70,10 @@ function TodoPage() {
         const observer = new IntersectionObserver(handleObserver, option);
         if (loader.current) observer.observe(loader.current);
       }, [handleObserver]);
+
+      const fetchTasks = () => {
+
+      }
     
     useEffect(() => {
         fetch("http://localhost:3001/")
@@ -67,17 +82,16 @@ function TodoPage() {
             setTodos(responseTodos?.response)
             console.log(responseTodos?.totalTasks);
             setTotalTasks(responseTodos?.totalTasks);
-            setLoadedTaskCount(responseTodos?.response?.length);
           });
       }, []);
 
     return (
         <Container maxWidth="md">
             <Header title="Todos" />
-            <FilterTasks todos={todos} totalTasks={totalTasks} />
-            <AddTask setTodos={setTodos} totalTasks={totalTasks} loadedTaskCount={loadedTaskCount} setTotalTasks={setTotalTasks} setLoadedTaskCount={setLoadedTaskCount}/>
+            <FilterTasks filterApplied={filterApplied} setFilterApplied={setFilterApplied} totalTasks={totalTasks} />
+            <AddTask totalTasks={totalTasks} setTotalTasks={setTotalTasks} />
             {todos?.length > 0 ? 
-            <TodoList todos={todos} setTodos={setTodos} setTotalTasks={setTotalTasks} totalTasks={totalTasks} setLoadedTaskCount={setLoadedTaskCount} sendQuery={sendQuery}/> :
+            <TodoList  setTotalTasks={setTotalTasks} totalTasks={totalTasks}  sendQuery={sendQuery}/> :
             <p>No Task Added...</p>
             }
             {loading && <p>Loading...</p>}
